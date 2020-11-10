@@ -19,6 +19,8 @@ from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 
+from joblib import dump, load
+
 sns.set_style('whitegrid')
 
 SOUNDFONT_PATH = './data/live_hq_natural_soundfont_gm.sf2'
@@ -329,3 +331,9 @@ def train():
     X_train, y_train = extract_metrics_for_dataset(rows)
 
     classifiers = train_classifier(X_train, y_train)
+
+def save(filename='classifiers.joblib'):
+    dump(classifiers, filename)
+
+def load(filename='classifiers.joblib'):
+    laod(filename)
