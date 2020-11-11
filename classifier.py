@@ -24,6 +24,11 @@ sns.set_style('whitegrid')
 SOUNDFONT_PATH = './data/live_hq_natural_soundfont_gm.sf2'
 DATASET_PATH = './data/mididrums'
 
+event_window = (0.05, 0.075)
+clf_window = (0.01, 0.20)
+feature_window_size = 0.05
+hop_length = 0.01
+
 classifiers = {}
 
 def midi2audio(midi_path, out_path, out_name=None, southfont_path=SOUNDFONT_PATH):
@@ -234,7 +239,7 @@ def process_midi_file(midi_path, outdir='./data/mididrums/synth',
 def process_audio_file(path, event_window=(0.01, 0.01), clf_window=(0.01, 0.05),
                       feature_window_size=0.01, hop_length=0.01):
     # 2. Load audio file
-    sample_rate, data = wav.read(audio_synth_path)
+    sample_rate, data = wav.read(path)
     amplitude = np.mean(data, axis=1)
     # 3. Initialize midi grid
     onsets = librosa.onset.onset_detect(y=amplitude, sr=sample_rate, units='time')
@@ -246,7 +251,7 @@ def process_audio_file(path, event_window=(0.01, 0.01), clf_window=(0.01, 0.05),
                              sample_rate, 
                              window_size=feature_window_size,
                              hop_length=hop_length)
-        xs.append(x); ys.append(y)
+        xs.append(x)
     # XS: arreglo de arreglos de features ordeanadas segun el Dict FEATURES
     # ordeandos por INSTRUMENT_NAME_MAPPING
     return np.array(xs)
@@ -255,11 +260,6 @@ def extract_metrics_for_dataset(rows):
 
     # Sample  tracks
     sample = rows.sample(10)
-
-    event_window = (0.05, 0.075)
-    clf_window = (0.01, 0.20)
-    feature_window_size = 0.05
-    hop_length = 0.01
 
 
     xs, ys = [], []
@@ -292,7 +292,13 @@ def train_classifier(X_train, y_train):
             pass
     return classifiers
 
-def test_classifier(X_test, y_test, classifiers):
+def predict_intrument(X):
+    for idx, instrument in INSTRUMENT_NAME_MAPPING.items():
+        y_pred = classifiers[instrument].predict(X)
+        print('Instrument ', instrument, ' predicts : ', y_pred)
+        print('\n\n')
+
+def test_classifier(X_test, y_test):
     METRICS = {
         'ROC_AUC': lambda y_true, y_pred, y_pred_proba: metrics.roc_auc_score(y_true, y_pred_proba),
         'Precision': lambda y_true, y_pred, y_pred_proba: metrics.precision_score(y_true, y_pred),
