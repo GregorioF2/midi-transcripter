@@ -294,11 +294,11 @@ def train_classifier(X_train, y_train):
             pass
     return classifiers
 
-def predict_intrument(X):
+def predict_intruments(X):
+    predictions = {}
     for idx, instrument in INSTRUMENT_NAME_MAPPING.items():
-        y_pred = classifiers[instrument].predict(X)
-        print('Instrument ', instrument, ' predicts : ', y_pred)
-        print('\n\n')
+        predictions[instrument] = classifiers[instrument].predict(X)
+    return predictions
 
 def test_classifier(X_test, y_test):
     METRICS = {
@@ -338,8 +338,11 @@ def train():
 
     classifiers = train_classifier(X_train, y_train)
 
-def save(filename='classifiers.joblib'):
-    dump(classifiers, filename)
+def save_clf():
+    for idx, instrument in INSTRUMENT_NAME_MAPPING.items():
+        dump(classifiers[instrument], f'{instrument}_clf.joblib')
 
-def load(filename='classifiers.joblib'):
-    laod(filename)
+def load_clf():
+    for idx, instrument in INSTRUMENT_NAME_MAPPING.items():
+        classifiers[instrument] = load(f'{instrument}_clf.joblib')
+    
